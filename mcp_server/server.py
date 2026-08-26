@@ -1,16 +1,15 @@
 from mcp.server.mcpserver import MCPServer
-from mcp_server.scanner import scan_directory
+from mcp_server.scanner import scan_directory as scan_directory_fn
 from mcp_server.duplicates import find_duplicates
 
 mcp = MCPServer("digital-declutter")
 
-
 @mcp.tool()
-def scan_directory_tool(directory: str) -> list[dict]:
+def scan_directory(directory: str) -> list[dict]:
     """
     Recursively scan a directory and return basic file information.
     """
-    return scan_directory(directory)
+    return scan_directory_fn(directory)
 
 
 @mcp.tool()

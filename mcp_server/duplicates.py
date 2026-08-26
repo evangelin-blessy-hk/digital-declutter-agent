@@ -1,6 +1,6 @@
 from pathlib import Path
 import hashlib
-
+from mcp_server.filesystem import get_files
 
 def calculate_hash(path):
     """
@@ -19,36 +19,40 @@ def find_duplicates(directory):
     """
     Find files with identical contents inside a directory.
     """
-    root = Path(directory)
-
-    files = [path for path in root.rglob("*") if path.is_file()]
+    files = get_files(directory)
 
     size_groups = {}
 
     for path in files:
-        size = path.stat().st_size
-        size_groups.setdefault(size, []).append(path)
+        try:
+            size = path.stat().st_size
+            size_groups.setdefault(size, []).append(path)
+        except (PermissionError, OSError):
+            continue
 
     candidates = [
-        paths
-        for paths in size_groups.values()
+        (size, paths)
+        for size, paths in size_groups.items()
         if len(paths) > 1
     ]
 
     duplicate_groups = []
 
-    for paths in candidates:
+    for size, paths in candidates:
         hash_groups = {}
 
         for path in paths:
-            file_hash = calculate_hash(path)
+            try:
+                file_hash = calculate_hash(path)
+            except (PermissionError, OSError):
+                continue
             hash_groups.setdefault(file_hash, []).append(path)
 
         for file_hash, matching_files in hash_groups.items():
             if len(matching_files) > 1:
                 duplicate_groups.append({
                     "hash": file_hash,
-                    "size_bytes": matching_files[0].stat().st_size,
+                    "size_bytes": size,
                     "files": [str(path) for path in matching_files]
                 })
 

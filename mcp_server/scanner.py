@@ -1,5 +1,5 @@
 from pathlib import Path
-
+from mcp_server.filesystem import get_files
 
 def scan_directory(directory: str) -> list[dict]:
     """
@@ -10,22 +10,13 @@ def scan_directory(directory: str) -> list[dict]:
     """
 
     root = Path(directory).expanduser().resolve()
-
-    if not root.exists():
-        raise ValueError(f"Directory does not exist: {root}")
-
-    if not root.is_dir():
-        raise ValueError(f"Path is not a directory: {root}")
+    files = get_files(directory)
 
     results = []
 
-    for path in root.rglob("*"):
-        if not path.is_file():
-            continue
-
+    for path in files:
         try:
             stat = path.stat()
-
             results.append({
                 "name": path.name,
                 "relative_path": str(path.relative_to(root)),
