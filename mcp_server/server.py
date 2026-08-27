@@ -1,46 +1,23 @@
-from pathlib import Path
 from mcp.server.mcpserver import MCPServer
+from mcp_server.scanner import scan_directory as scan_directory_fn
+from mcp_server.duplicates import find_duplicates
 
 mcp = MCPServer("digital-declutter")
-
 
 @mcp.tool()
 def scan_directory(directory: str) -> list[dict]:
     """
-    Recursively scan a directory and return basic information
-    about every file found.
-
-    This tool is read-only. It does not modify any files.
+    Recursively scan a directory and return basic file information.
     """
+    return scan_directory_fn(directory)
 
-    root = Path(directory).expanduser().resolve()
 
-    if not root.exists():
-        raise ValueError(f"Directory does not exist: {root}")
-
-    if not root.is_dir():
-        raise ValueError(f"Path is not a directory: {root}")
-
-    results = []
-
-    for path in root.rglob("*"):
-        if not path.is_file():
-            continue
-
-        try:
-            stat = path.stat()
-
-            results.append({
-                "name": path.name,
-                "relative_path": str(path.relative_to(root)),
-                "extension": path.suffix.lower(),
-                "size_bytes": stat.st_size,
-            })
-
-        except (PermissionError, OSError):
-            continue
-
-    return results
+@mcp.tool()
+def find_duplicate_files(directory: str) -> list[dict]:
+    """
+    Find files with identical contents inside a directory.
+    """
+    return find_duplicates(directory)
 
 
 if __name__ == "__main__":
