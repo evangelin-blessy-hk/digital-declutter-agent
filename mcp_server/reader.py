@@ -4,9 +4,13 @@ from mcp_server.text_reader import (
     read_text_file,
 )
 from mcp_server.pdf_reader import read_pdf_file
+from mcp_server.image_reader import (
+    SUPPORTED_IMAGE_EXTENSIONS,
+    read_image_file,
+)
 
 
-def read_file(path: str, allowed_root: str) -> str:
+def read_file(path: str, allowed_root: str):
     """
     Validate a file and route it to the appropriate reader.
     """
@@ -20,6 +24,9 @@ def read_file(path: str, allowed_root: str) -> str:
 
     if extension == ".pdf":
         return read_pdf_file(file_path)
+
+    if extension in SUPPORTED_IMAGE_EXTENSIONS:
+        return read_image_file(file_path)
 
     raise ValueError(
         f"Unsupported file type: {extension}"
