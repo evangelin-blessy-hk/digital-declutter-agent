@@ -1,7 +1,7 @@
 from mcp.server.mcpserver import MCPServer
 from mcp_server.scanner import scan_directory as scan_directory_fn
 from mcp_server.duplicates import find_duplicates
-from mcp_server.reader import read_text_file
+from mcp_server.reader import read_file
 
 mcp = MCPServer("digital-declutter")
 
@@ -24,9 +24,9 @@ def find_duplicate_files(directory: str) -> list[dict]:
 @mcp.tool(name="read_file")
 def read_file_tool(path: str, allowed_root: str) -> str:
     """
-    Read the contents of a supported text file inside an allowed directory.
+    Read the contents of a supported file inside an allowed directory.
     """
-    return read_text_file(path, allowed_root)
+    return read_file(path, allowed_root)
 
 
 if __name__ == "__main__":
