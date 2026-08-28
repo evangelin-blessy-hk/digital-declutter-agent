@@ -2,6 +2,7 @@ from mcp.server.mcpserver import MCPServer
 from mcp_server.scanner import scan_directory as scan_directory_fn
 from mcp_server.duplicates import find_duplicates
 from mcp_server.reader import read_file
+from mcp.types import ImageContent
 
 mcp = MCPServer("digital-declutter")
 
@@ -22,9 +23,10 @@ def find_duplicate_files(directory: str) -> list[dict]:
 
 
 @mcp.tool(name="read_file")
-def read_file_tool(path: str, allowed_root: str) -> str:
+def read_file_tool(path: str, allowed_root: str) -> str | ImageContent:
     """
     Read the contents of a supported file inside an allowed directory.
+    Returns text for text/PDF files and image content for supported images.
     """
     return read_file(path, allowed_root)
 

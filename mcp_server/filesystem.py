@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 def validate_file_in_root(path: str, allowed_root: str) -> Path:
@@ -28,6 +29,25 @@ def validate_file_in_root(path: str, allowed_root: str) -> Path:
         )
 
     return file_path
+
+def open_validated_file(path: str, allowed_root: str) -> tuple[int, Path]:
+    """
+    Open a validated file and return its file descriptor and path.
+    """
+
+    file_path = validate_file_in_root(path, allowed_root)
+
+    try:
+        fd = os.open(
+            file_path,
+            os.O_RDONLY | os.O_NOFOLLOW,
+        )
+    except (PermissionError, OSError) as error:
+        raise ValueError(
+            f"Unable to open file: {file_path}"
+        ) from error
+
+    return fd, file_path
 
 def get_files(directory: str) -> list[Path]:
     """
