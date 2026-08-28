@@ -1,39 +1,22 @@
 from mcp_server.filesystem import validate_file_in_root
+from mcp_server.text_reader import (
+    SUPPORTED_EXTENSIONS as TEXT_EXTENSIONS,
+    read_text_file,
+)
 
 
-TEXT_EXTENSIONS = {".txt", ".md", ".csv"}
-MAX_FILE_SIZE = 1_000_000
-
-
-def read_text_file(path: str, allowed_root: str) -> str:
+def read_file(path: str, allowed_root: str) -> str:
     """
-    Read a supported text file inside an allowed directory.
+    Validate a file and route it to the appropriate reader.
     """
 
     file_path = validate_file_in_root(path, allowed_root)
 
     extension = file_path.suffix.lower()
 
-    if extension not in TEXT_EXTENSIONS:
-        raise ValueError(
-            f"Unsupported file type: {extension}"
-        )
+    if extension in TEXT_EXTENSIONS:
+        return read_text_file(file_path)
 
-    try:
-        file_size = file_path.stat().st_size
-    except (PermissionError, OSError) as error:
-        raise ValueError(
-            f"Unable to access file: {file_path}"
-        ) from error
-
-    if file_size > MAX_FILE_SIZE:
-        raise ValueError(
-            f"File is too large to read: {file_path}"
-        )
-
-    try:
-        return file_path.read_text(encoding="utf-8")
-    except (PermissionError, OSError) as error:
-        raise ValueError(
-            f"Unable to read file: {file_path}"
-        ) from error
+    raise ValueError(
+        f"Unsupported file type: {extension}"
+    )
