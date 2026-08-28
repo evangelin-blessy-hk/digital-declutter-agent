@@ -1,5 +1,6 @@
-from pathlib import Path
 import base64
+import os
+from pathlib import Path
 
 from mcp.types import ImageContent
 
@@ -14,30 +15,29 @@ SUPPORTED_IMAGE_EXTENSIONS = {
 MAX_IMAGE_FILE_SIZE = 10_000_000
 
 
-def read_image_file(path: Path) -> ImageContent:
+def read_image_file(path: Path, fd: int) -> ImageContent:
     """
-    Read an image file and return it as MCP ImageContent.
+    Read an image from an already-open file descriptor.
     """
-
-    if path.suffix.lower() not in SUPPORTED_IMAGE_EXTENSIONS:
-        raise ValueError(
-            f"Unsupported image type: {path.suffix}"
-        )
 
     try:
-        file_size = path.stat().st_size
-    except (PermissionError, OSError) as error:
-        raise ValueError(
-            f"Unable to access image file: {path}"
-        ) from error
+        file_size = os.fstat(fd).st_size
 
-    if file_size > MAX_IMAGE_FILE_SIZE:
-        raise ValueError(
-            f"Image file is too large to read: {path}"
+        if file_size > MAX_IMAGE_FILE_SIZE:
+            raise ValueError(
+                f"Image file is too large to read: {path}"
+            )
+
+        image_data = os.read(
+            fd,
+            MAX_IMAGE_FILE_SIZE + 1,
         )
 
-    try:
-        image_data = path.read_bytes()
+        if len(image_data) > MAX_IMAGE_FILE_SIZE:
+            raise ValueError(
+                f"Image file is too large to read: {path}"
+            )
+
         encoded_data = base64.b64encode(image_data).decode("ascii")
 
         mime_types = {
@@ -52,6 +52,9 @@ def read_image_file(path: Path) -> ImageContent:
             data=encoded_data,
             mimeType=mime_types[path.suffix.lower()],
         )
+
+    except ValueError:
+        raise
 
     except (PermissionError, OSError) as error:
         raise ValueError(
