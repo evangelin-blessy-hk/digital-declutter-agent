@@ -22,11 +22,11 @@ def find_duplicate_files(directory: str) -> list[dict]:
 
 
 @mcp.tool(name="read_file")
-def read_file_tool(path: str) -> str:
+def read_file_tool(path: str, allowed_root: str) -> str:
     """
-    Read the contents of a supported text file.
+    Read the contents of a supported text file inside an allowed directory.
     """
-    return read_text_file(path)
+    return read_text_file(path, allowed_root)
 
 
 if __name__ == "__main__":
